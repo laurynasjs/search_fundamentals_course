@@ -231,8 +231,6 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
             }
         },
         "highlight": {
-            "number_of_fragments": 1,
-            "fragment_size": -1,
             "pre_tags": ['<span style="color:red">'],
             "post_tags": ["</span>"],
             "fields": {
