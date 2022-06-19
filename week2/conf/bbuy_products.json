@@ -26,10 +26,14 @@
       },
       "filter": {
         "smarter_hyphens_filter": {
-          "TODO": "DEFINE ME"
+          "type": "word_delimiter_graph",
+          "catenate_words": true,
+          "catenate_all": true
         },
         "shingle": {
-            "TODO": "DEFINE ME"
+            "type": "shingle",
+            "min_shingle_size": 2,
+            "max_shingle_size": 3
           }
       }
     }
@@ -204,7 +208,13 @@
         }
       },
       "image": {
-        "type": "keyword"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
       "inStoreAvailability": {
         "type": "boolean"
@@ -247,11 +257,25 @@
           "keyword": {
             "type": "keyword",
             "ignore_above": 2048
+          },
+          "hyphens": {
+            "type": "text",
+            "analyzer": "smarter_hyphens"
           }
         }
       },
-      "TODO: REPLACE WITH SUGGEST": {
-        "REPLACE": "REPLACE"
+      "suggest": {
+        "type": "completion",
+        "fields": {
+          "trigrams": {
+            "type": "text",
+            "analyzer": "trigram"
+          },
+          "text": {
+            "type": "text",
+            "analyzer": "english"
+          }
+        }
       },
       "canonical": {
         "type": "text"

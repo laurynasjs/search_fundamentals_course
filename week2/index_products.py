@@ -133,7 +133,7 @@ def index_file(file, index_name):
 
 
 @click.command()
-@click.option('--source_dir', '-s', help='XML files source directory')
+@click.option('--source_dir', '-s', default="/workspace/datasets/product_data/products", help='XML files source directory')
 @click.option('--index_name', '-i', default="bbuy_products", help="The name of the index to write to")
 @click.option('--workers', '-w', default=8, help="The number of workers to use to process files")
 def main(source_dir: str, index_name: str, workers: int):

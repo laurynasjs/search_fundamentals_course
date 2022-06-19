@@ -159,16 +159,31 @@ def create_query(user_query, filters, sort="_score", sortDir="desc", size=10, in
 # Give a user query from the UI and the query object we've built so far, adding in spelling suggestions
 def add_spelling_suggestions(query_obj, user_query):
     #### W2, L2, S1
-    print("TODO: IMPLEMENT ME")
-    #query_obj["suggest"] = {
-    #    "text": user_query,
-    #    "phrase_suggest": {
-
-    #    },
-    #    "term_suggest": {
-
-    #    }
-    #}
+    # print("TODO: IMPLEMENT ME")
+    query_obj["suggest"] = {
+       "text": user_query,
+       "term_suggest": {
+        "term": {
+            "field": "suggest.text",
+            "min_word_length": 3,
+            "suggest_mode": "popular"
+        }
+       },
+       "phrase_suggest": {
+        "phrase": {
+            "field": "suggest.trigrams",
+            "direct_generator":[{
+                "field": "suggest.trigrams",
+                "min_word_length": 2,
+                "suggest_mode": "popular"
+            }],
+            "highlight": {
+                "pre_tag": "<em>",
+                "post_tag": "</em>"
+            }
+        }
+       }
+    }
 
 
 # Given the user query from the UI, the query object we've built so far and a Pandas data GroupBy data frame,
@@ -183,10 +198,22 @@ def add_click_priors(query_obj, user_query, priors_gb):
             # Create a string object of SKUs and weights that will boost documents matching the SKU
             print("TODO: Implement me")
             if click_prior != "":
-                click_prior_query_obj = None # Implement a query object that matches on the ID or SKU with weights of
+                sku_list = (prior_clicks_for_query.value_counts("sku")/len(priors_gb.get_group("ipad")))
+                sku_list = sku_list.map(str)
+                items_to_boost = ['^'.join(i) for i in zip(sku_list.index.map(str), sku_list.values)]
+
+                click_prior_query_obj = {
+                    "query_string": {
+                        "default_field": "sku",
+                        "query": items_to_boost,
+                        # "weight": 2
+                        }
+                    }
+                # Implement a query object that matches on the ID or SKU with weights of
                 # This may feel like cheating, but it's really not, esp. in ecommerce where you have all this prior data,
                 if click_prior_query_obj is not None:
                     query_obj["query"]["function_score"]["query"]["bool"]["should"].append(click_prior_query_obj)
+                    
     except KeyError as ke:
         print(ke)
         print(f"Can't process user_query: {user_query} for click priors")
@@ -205,7 +232,7 @@ def add_aggs(query_obj):
         },
         "missing_images": {
             "missing": {
-                "field": "image"
+                "field": "image.keyword"
             }
         },
         "regularPrice": {
